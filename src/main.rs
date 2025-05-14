@@ -28,10 +28,17 @@ fn handle_req(mut stream: TcpStream) {
     let path = request.split_whitespace().nth(1).unwrap();
     println!("path: {}", path);
 
-    let response = match path {
-        "/" => "HTTP/1.1 200 OK\r\n\r\n",
-        _ => "HTTP/1.1 404 Not Found\r\n\r\n",
+    let response = if path == "/" {
+        String::from("HTTP/1.1 200 OK\r\n\r\nHello, world!")
+    } else if path.starts_with("/echo/") {
+        println!("echo detected in path");
+        let echo = path.split("/");
+        println!("{:?}", echo);
+        String::from("HTTP/1.1 404 NOT FOUND\r\n\r\n404 Not Found")
+    } else {
+        String::from("HTTP/1.1 404 NOT FOUND\r\n\r\n404 Not Found")
     };
+
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
