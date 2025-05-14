@@ -42,7 +42,7 @@ fn handle_req(mut stream: TcpStream) {
             echo
         )
     } else {
-        String::from("HTTP/1.1 404 NOT FOUND\r\n\r\n404 Not Found")
+        String::from("HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
     };
 
     stream.write(response.as_bytes()).unwrap();
