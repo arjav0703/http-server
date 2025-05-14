@@ -13,7 +13,7 @@ fn main() {
                 handle_req(stream);
             }
             Err(e) => {
-                println!("error: {}", e);
+                eprintln!("error: {}", e);
             }
         }
     }
@@ -26,6 +26,8 @@ fn handle_req(mut stream: TcpStream) {
     println!("request: {}", request);
     // Send a simple HTTP 200 OK response
     let response = "HTTP/1.1 200 OK\r\n\r\n";
+    let path = request.split_whitespace().nth(1).unwrap();
+    println!("path: {}", path);
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
