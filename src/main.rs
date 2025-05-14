@@ -24,10 +24,14 @@ fn handle_req(mut stream: TcpStream) {
 
     let request = reader.lines().next().unwrap().unwrap();
     println!("request: {}", request);
-    // Send a simple HTTP 200 OK response
-    let response = "HTTP/1.1 200 OK\r\n\r\n";
+
     let path = request.split_whitespace().nth(1).unwrap();
     println!("path: {}", path);
+
+    let response = match path {
+        "/" => "HTTP/1.1 200 OK\r\n\r\n",
+        _ => "HTTP/1.1 404 Not Found\r\n\r\n",
+    };
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
