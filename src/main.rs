@@ -32,9 +32,15 @@ fn handle_req(mut stream: TcpStream) {
         String::from("HTTP/1.1 200 OK\r\n\r\nHello, world!")
     } else if path.starts_with("/echo/") {
         println!("echo detected in path");
-        let echo = path.split("/");
-        println!("{:?}", echo);
-        String::from("HTTP/1.1 404 NOT FOUND\r\n\r\n404 Not Found")
+
+        let echo = path.split("/").nth(2).unwrap();
+        println!("{}", echo);
+
+        format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
+            echo.len(),
+            echo
+        )
     } else {
         String::from("HTTP/1.1 404 NOT FOUND\r\n\r\n404 Not Found")
     };
