@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Write};
 use std::net::{TcpListener, TcpStream};
+use std::thread;
 
 fn main() {
     println!("Logs from your program will appear here!");
@@ -11,7 +12,11 @@ fn main() {
         match stream {
             Ok(stream) => {
                 println!("Accepted new connection");
-                handle_req(stream);
+
+                // Spawn a new thread to handle each connection
+                thread::spawn(|| {
+                    handle_req(stream);
+                });
             }
             Err(e) => {
                 eprintln!("error: {}", e);
