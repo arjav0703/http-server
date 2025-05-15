@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Write};
 use std::net::{TcpListener, TcpStream};
 
@@ -33,7 +34,6 @@ fn handle_req(mut stream: TcpStream) {
     for line in lines {
         let line = line.unwrap();
         if line.is_empty() {
-            // Empty line marks the end of headers
             break;
         }
 
@@ -48,30 +48,37 @@ fn handle_req(mut stream: TcpStream) {
     let response = if path == "/" {
         String::from("HTTP/1.1 200 OK\r\n\r\nHello, world!")
     } else if path.starts_with("/echo/") {
-        println!("echo detected in path");
-
-        let echo = path.split("/").nth(2).unwrap();
-        println!("{}", echo);
-
-        format!(
-            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
-            echo.len(),
-            echo
-        )
+        echo_handler(path)
     } else if path.starts_with("/user-agent") {
-        println!("User-Agent detected in path");
-        let user_agent = headers.get("User-Agent").unwrap();
-
-        println!("User-Agent: {}", user_agent);
-        format!(
-            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
-            user_agent.len(),
-            user_agent
-        )
+        agent_handler(headers)
     } else {
         String::from("HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
     };
 
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
+}
+
+fn echo_handler(path: &str) -> String {
+    println!("echo detected in path");
+    let echo = path.split("/").nth(2).unwrap();
+    println!("{}", echo);
+
+    format!(
+        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
+        echo.len(),
+        echo
+    )
+}
+
+fn agent_handler(headers: HashMap<String, String>) -> String {
+    println!("User-Agent detected in path");
+    let user_agent = headers.get("User-Agent").unwrap();
+
+    println!("User-Agent: {}", user_agent);
+    format!(
+        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
+        user_agent.len(),
+        user_agent
+    )
 }
