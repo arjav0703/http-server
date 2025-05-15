@@ -10,7 +10,7 @@ fn main() {
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                println!("accepted new connection");
+                println!("Accepted new connection");
                 handle_req(stream);
             }
             Err(e) => {
