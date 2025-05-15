@@ -59,8 +59,15 @@ fn handle_req(mut stream: TcpStream) {
             echo
         )
     } else if path.starts_with("/user-agent") {
-        println!("user-agent detected in path");
-        format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: \r\n\r\n",)
+        println!("User-Agent detected in path");
+        let user_agent = headers.get("User-Agent").unwrap();
+
+        println!("User-Agent: {}", user_agent);
+        format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
+            user_agent.len(),
+            user_agent
+        )
     } else {
         String::from("HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
     };
