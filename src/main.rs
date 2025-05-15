@@ -46,7 +46,7 @@ fn handle_req(mut stream: TcpStream) {
     println!("Headers: {:?}", headers);
 
     let response = if path == "/" {
-        String::from("HTTP/1.1 200 OK\r\n\r\nHello, world!")
+        String::from("HTTP/1.1 200 OK\r\n\r\n")
     } else if path.starts_with("/echo/") {
         echo_handler(path)
     } else if path.starts_with("/user-agent") {
