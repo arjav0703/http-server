@@ -102,6 +102,7 @@ fn file_handler(path: &str, method: String, directory: String) -> String {
         )
     } else if method == String::from("POST") {
         println!("[file_handler] POST detected");
+        fs::write(&file_path, "some data").unwrap();
         String::from("HTTP/1.1 201 Created\r\n\r\n")
     } else {
         eprint!("[file_handler]: File not found");
