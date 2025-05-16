@@ -40,43 +40,22 @@ fn main() {
 }
 
 fn handle_req(mut stream: TcpStream, directory: Option<String>) {
-    let reader = BufReader::new(&stream);
-    let mut lines = reader.lines();
-
-    let request = lines.next().unwrap().unwrap();
-    println!("request: {}", request);
-
-    let path = request.split_whitespace().nth(1).unwrap();
-    println!("path: {}", path);
-
-    let mut headers = std::collections::HashMap::new();
-    for line in lines {
-        let line = line.unwrap();
-        if line.is_empty() {
-            break;
-        }
-
-        // Split header at first colon
-        if let Some((key, value)) = line.split_once(": ") {
-            headers.insert(key.to_string(), value.to_string());
-        }
-    }
-
-    println!("Headers: {:?}", headers);
+    let mut reader = BufReader::new(&stream);
+    let (path, headers) = reqreader(&mut reader);
 
     let response = if path == "/" {
         String::from("HTTP/1.1 200 OK\r\n\r\n")
     } else if path.starts_with("/echo/") {
-        echo_handler(path)
+        echo_handler(&path)
     } else if path.starts_with("/user-agent") {
         agent_handler(headers)
     } else if path.starts_with("/files/") && directory.is_some() {
-        file_handler(path, directory.unwrap())
+        file_handler(&path, directory.unwrap())
     } else {
         String::from("HTTP/1.1 404 Not Found\r\n\r\n")
     };
 
-    stream.write(response.as_bytes()).unwrap();
+    stream.write_all(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
 
@@ -105,8 +84,6 @@ fn agent_handler(headers: HashMap<String, String>) -> String {
 }
 
 fn file_handler(path: &str, directory: String) -> String {
-    println!("File request detected: {}", path);
-
     let filename = path.strip_prefix("/files/").unwrap();
     println!("Filename: {}", filename);
 
@@ -123,4 +100,31 @@ fn file_handler(path: &str, directory: String) -> String {
     } else {
         String::from("HTTP/1.1 404 Not Found\r\n\r\nThe following files are available:")
     }
+}
+
+fn reqreader<R: BufRead>(reader: &mut R) -> (String, HashMap<String, String>) {
+    let mut lines = reader.lines();
+
+    let request = lines.next().unwrap().unwrap();
+    println!("request: {}", request);
+
+    let path = request.split_whitespace().nth(1).unwrap().to_string();
+    println!("path: {}", path);
+
+    let mut headers = std::collections::HashMap::new();
+    for line in lines {
+        let line = line.unwrap();
+        if line.is_empty() {
+            break;
+        }
+
+        // Split header at first colon
+        if let Some((key, value)) = line.split_once(": ") {
+            headers.insert(key.to_string(), value.to_string());
+        }
+    }
+
+    println!("Headers: {:?}", headers);
+
+    (path, headers)
 }
