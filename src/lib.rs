@@ -4,6 +4,9 @@ use std::io::{BufRead, BufReader, Read, Write};
 use std::net::TcpStream;
 use std::path::Path;
 use colored::Colorize;
+use flate2::write::GzEncoder;
+use flate2::Compression;
+
 
 pub fn handle_req(mut stream: TcpStream, directory: Option<String>) {
     let mut reader = BufReader::new(&stream);
@@ -192,16 +195,28 @@ impl HttpResponse {
     }
 
     fn as_bytes(&self) -> Vec<u8> {
+        let mut body = self.body.clone();
+        let mut headers = self.headers.clone();
+
+        if let Some(encoding) = headers.get("Content-Encoding") {
+            if encoding == "gzip" {
+                let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+                encoder.write_all(&body).unwrap();
+                body = encoder.finish().unwrap();
+                headers.insert("Content-Length".to_string(), body.len().to_string());
+            }
+        }
+
         let mut response = format!("HTTP/1.1 {}\r\n", self.status);
 
-        for (key, value) in &self.headers {
+        for (key, value) in &headers {
             response.push_str(&format!("{}: {}\r\n", key, value));
         }
 
         response.push_str("\r\n");
 
         let mut bytes = response.into_bytes();
-        bytes.extend(&self.body);
+        bytes.extend(&body);
         bytes
     }
 }
