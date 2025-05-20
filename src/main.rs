@@ -2,12 +2,15 @@ use codecrafters_http_server::handle_req;
 use std::thread;
 use std::net::{TcpListener};
 use std::env;
+use colored::Colorize;
 
 fn main() {
+    
     let port = "8080";
+    println!("Server started on port {}", port.yellow().bold());
+
     run(port);
 
-    println!("Server started on port {}", port);
 }
 
 fn run(port:&str) {
@@ -25,7 +28,8 @@ fn run(port:&str) {
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                println!("Accepted new connection");
+                let msg = "Accepted new connection";
+                println!("{}", msg.green());
 
                 let dir = directory.map(|s| s.to_string());
 

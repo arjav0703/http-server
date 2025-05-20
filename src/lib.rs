@@ -3,7 +3,7 @@ use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::{TcpStream};
 use std::path::Path;
-
+use colored::Colorize;
 
 pub fn handle_req(mut stream: TcpStream, directory: Option<String>) {
     let mut reader = BufReader::new(&stream);
@@ -26,9 +26,9 @@ pub fn handle_req(mut stream: TcpStream, directory: Option<String>) {
 }
 
 pub fn echo_handler(path: &str) -> String {
-    println!("echo detected in path");
     let echo = path.split("/").nth(2).unwrap();
-    println!("{}", echo);
+
+    println!("{} : {}", String::from("[Echo handler]:").blue(), echo.yellow().bold());
 
     format!(
         "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
@@ -38,10 +38,9 @@ pub fn echo_handler(path: &str) -> String {
 }
 
 pub fn agent_handler(headers: HashMap<String, String>) -> String {
-    println!("User-Agent detected in path");
     let user_agent = headers.get("User-Agent").unwrap();
 
-    println!("User-Agent: {}", user_agent);
+    println!("[Agent-handler] User-Agent: {}", user_agent.bright_yellow().bold());
     format!(
         "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
         user_agent.len(),
@@ -50,10 +49,10 @@ pub fn agent_handler(headers: HashMap<String, String>) -> String {
 }
 
 pub fn file_handler(path: &str, method: String, directory: String, body: Vec<u8>) -> String {
-    println!("[file_handler] method: {}", &method);
+    println!("[file_handler] method: {}", &method.red().bold());
 
     let filename = path.strip_prefix("/files/").unwrap();
-    println!("[file_handler] Filename: {}", filename);
+    println!("[file_handler] Filename: {}", filename.yellow().italic());
 
     let file_path = Path::new(&directory).join(filename);
     println!("[file_handler] file path: {:?}", file_path);
