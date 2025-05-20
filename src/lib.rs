@@ -23,6 +23,7 @@ pub fn handle_req(mut stream: TcpStream, directory: Option<String>) {
 
     // Optional: echo Accept-Encoding if present
     if let Some(encoding) = headers.get("Accept-Encoding") {
+        response.add_header("Accept-Encoding", encoding);
         response.add_header("Content-Encoding", encoding);
     }
 
