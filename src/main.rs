@@ -6,7 +6,7 @@ use colored::Colorize;
 
 fn main() {
     
-    let port = "8080";
+    let port = "4221";
     println!("🚀 Server started on port {}", port.yellow().bold());
 
     run(port);
