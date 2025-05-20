@@ -21,10 +21,11 @@ pub fn handle_req(mut stream: TcpStream, directory: Option<String>) {
         HttpResponse::new("404 Not Found")
     };
 
-    // Optional: echo Accept-Encoding if present
     if let Some(encoding) = headers.get("Accept-Encoding") {
         response.add_header("Accept-Encoding", encoding);
+        if encoding == "gzip" {
         response.add_header("Content-Encoding", encoding);
+        }
     }
 
     let response_bytes = response.as_bytes();
