@@ -23,8 +23,8 @@ pub fn handle_req(mut stream: TcpStream, directory: Option<String>) {
 
     if let Some(encoding) = headers.get("Accept-Encoding") {
         response.add_header("Accept-Encoding", encoding);
-        if encoding == "gzip" {
-        response.add_header("Content-Encoding", encoding);
+        if encoding.contains("gzip") {
+        response.add_header("Content-Encoding", "gzip");
         }
     }
 
