@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
-use std::net::{TcpStream};
+use std::net::TcpStream;
 use std::path::Path;
 use colored::Colorize;
 
@@ -9,91 +9,113 @@ pub fn handle_req(mut stream: TcpStream, directory: Option<String>) {
     let mut reader = BufReader::new(&stream);
     let (path, method, headers, body) = reqreader(&mut reader);
 
-    let response = if path == "/" {
-        String::from("HTTP/1.1 200 OK\r\n\r\n")
+    let mut response = if path == "/" {
+        HttpResponse::new("200 OK")
     } else if path.starts_with("/echo/") {
         echo_handler(&path)
     } else if path.starts_with("/user-agent") {
-        agent_handler(headers)
+        agent_handler(&headers)
     } else if path.starts_with("/files/") && directory.is_some() {
-        file_handler(&path, method, directory.unwrap(), body)
+        file_handler(&path, &method, directory.unwrap(), body)
     } else {
-        String::from("HTTP/1.1 404 Not Found\r\n\r\n")
+        HttpResponse::new("404 Not Found")
     };
 
-    stream.write_all(response.as_bytes()).unwrap();
+    // Optional: echo Accept-Encoding if present
+    if let Some(encoding) = headers.get("Accept-Encoding") {
+        response.add_header("Accept-Encoding", encoding);
+    }
+
+    let response_bytes = response.as_bytes();
+    println!("Response:\n{}", String::from_utf8_lossy(&response_bytes).green().bold());
+
+    stream.write_all(&response_bytes).unwrap();
     stream.flush().unwrap();
 }
 
-pub fn echo_handler(path: &str) -> String {
-    let echo = path.split("/").nth(2).unwrap();
+fn echo_handler(path: &str) -> HttpResponse {
+    let echo = path.split('/').nth(2).unwrap_or("");
+    println!("{} : {}", "[Echo handler]:".blue(), echo.yellow().bold());
 
-    println!("{} : {}", String::from("[Echo handler]:").blue(), echo.yellow().bold());
+    let mut response = HttpResponse::new("200 OK");
+    response.add_header("Content-Type", "text/plain");
+    response.set_body(echo.as_bytes());
 
-    format!(
-        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
-        echo.len(),
-        echo
-    )
+    response
 }
 
-pub fn agent_handler(headers: HashMap<String, String>) -> String {
-    let user_agent = headers.get("User-Agent").unwrap();
+fn agent_handler(headers: &HashMap<String, String>) -> HttpResponse {
+    let unknown = "Unknown".to_string();
+    let user_agent = headers.get("User-Agent").unwrap_or(&unknown);
 
     println!("[Agent-handler] User-Agent: {}", user_agent.bright_yellow().bold());
-    format!(
-        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
-        user_agent.len(),
-        user_agent
-    )
+
+    let mut response = HttpResponse::new("200 OK");
+    response.add_header("Content-Type", "text/plain");
+    response.set_body(user_agent.as_bytes());
+
+    response
 }
 
-pub fn file_handler(path: &str, method: String, directory: String, body: Vec<u8>) -> String {
-    println!("[file_handler] method: {}", &method.red().bold());
+fn file_handler(path: &str, method: &str, directory: String, body: Vec<u8>) -> HttpResponse {
+    println!("[file_handler] method: {}", method.red().bold());
 
-    let filename = path.strip_prefix("/files/").unwrap();
+    let filename = match path.strip_prefix("/files/") {
+        Some(f) => f,
+        None => {
+            eprintln!("[file_handler] Invalid path format: {}", path);
+            return HttpResponse::new("400 Bad Request");
+        }
+    };
     println!("[file_handler] Filename: {}", filename.yellow().italic());
 
     let file_path = Path::new(&directory).join(filename);
-    println!("[file_handler] file path: {:?}", file_path);
+    println!("[file_handler] File path: {:?}", file_path);
 
-    // Check if the file exists and read it
-    if method == "GET" {
-        if let Ok(contents) = fs::read(&file_path) {
-            println!("[file_handler] File found");
-            format!(
-                "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n{}",
-                contents.len(),
-                String::from_utf8_lossy(&contents)
-            )
-        } else {
-            eprint!("[file_handler]: File not found");
-            String::from("HTTP/1.1 404 Not Found\r\n\r\n")
-        }
-    } else if method == "POST" {
-        println!(
-            "[file_handler] POST detected with body length: {}",
-            body.len()
-        );
-
-        // Ensure parent directories exist
-        if let Some(parent) = file_path.parent() {
-            fs::create_dir_all(parent).unwrap_or_default();
+    match method {
+        "GET" => {
+            match fs::read(&file_path) {
+                Ok(contents) => {
+                    println!("[file_handler] File found");
+                    let mut response = HttpResponse::new("200 OK");
+                    response.add_header("Content-Type", "application/octet-stream");
+                    response.set_body(&contents);
+                    response
+                }
+                Err(_) => {
+                    eprintln!("[file_handler] File not found");
+                    HttpResponse::new("404 Not Found")
+                }
+            }
         }
 
-        // Write the body to the file
-        if let Err(e) = fs::write(&file_path, &body) {
-            eprintln!("Error writing file: {}", e);
-            return String::from("HTTP/1.1 500 Internal Server Error\r\n\r\n");
+        "POST" => {
+            println!("[file_handler] POST detected with body length: {}", body.len());
+
+            if let Some(parent) = file_path.parent() {
+                if let Err(e) = fs::create_dir_all(parent) {
+                    eprintln!("[file_handler] Failed to create directories: {}", e);
+                    return HttpResponse::new("500 Internal Server Error");
+                }
+            }
+
+            match fs::write(&file_path, &body) {
+                Ok(_) => HttpResponse::new("201 Created"),
+                Err(e) => {
+                    eprintln!("[file_handler] Error writing file: {}", e);
+                    HttpResponse::new("500 Internal Server Error")
+                }
+            }
         }
 
-        String::from("HTTP/1.1 201 Created\r\n\r\n")
-    } else {
-        String::from("HTTP/1.1 405 Method Not Allowed\r\n\r\n")
+        _ => {
+            eprintln!("[file_handler] Method not allowed: {}", method);
+            HttpResponse::new("405 Method Not Allowed")
+        }
     }
 }
 
-pub fn reqreader<R: BufRead + Read>(
+fn reqreader<R: BufRead + Read>(
     reader: &mut R,
 ) -> (String, String, HashMap<String, String>, Vec<u8>) {
     let mut request_line = String::new();
@@ -107,7 +129,7 @@ pub fn reqreader<R: BufRead + Read>(
     let path = request_line.split_whitespace().nth(1).unwrap().to_string();
     println!("path: {}", path);
 
-    let mut headers = std::collections::HashMap::new();
+    let mut headers = HashMap::new();
     let mut content_length = 0;
 
     // Read headers
@@ -120,7 +142,6 @@ pub fn reqreader<R: BufRead + Read>(
             break;
         }
 
-        // Split header at first colon
         if let Some((key, value)) = line.split_once(": ") {
             if key.to_lowercase() == "content-length" {
                 content_length = value.parse::<usize>().unwrap_or(0);
@@ -131,15 +152,55 @@ pub fn reqreader<R: BufRead + Read>(
 
     println!("Headers: {:?}", headers);
 
-    // Read the body if content-length is specified
+    // Read body
     let mut body = Vec::new();
     if content_length > 0 {
-        // Read exact number of bytes as specified in content-length
         let mut buffer = vec![0; content_length];
-        if let Ok(_) = reader.read_exact(&mut buffer) {
+        if reader.read_exact(&mut buffer).is_ok() {
             body = buffer;
         }
     }
 
     (path, method, headers, body)
 }
+
+struct HttpResponse {
+    status: String,
+    headers: HashMap<String, String>,
+    body: Vec<u8>,
+}
+
+impl HttpResponse {
+    fn new(status: &str) -> Self {
+        HttpResponse {
+            status: status.to_string(),
+            headers: HashMap::new(),
+            body: Vec::new(),
+        }
+    }
+
+    fn add_header(&mut self, key: &str, value: &str) {
+        self.headers.insert(key.to_string(), value.to_string());
+    }
+
+    fn set_body(&mut self, body: &[u8]) {
+        self.body = body.to_vec();
+        self.headers
+            .insert("Content-Length".to_string(), self.body.len().to_string());
+    }
+
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut response = format!("HTTP/1.1 {}\r\n", self.status);
+
+        for (key, value) in &self.headers {
+            response.push_str(&format!("{}: {}\r\n", key, value));
+        }
+
+        response.push_str("\r\n");
+
+        let mut bytes = response.into_bytes();
+        bytes.extend(&self.body);
+        bytes
+    }
+}
+
