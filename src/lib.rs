@@ -42,7 +42,7 @@ pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) -> bool {
     }
  
     let response_bytes = response.as_bytes();
-    println!("Response:\n{}", String::from_utf8_lossy(&response_bytes).green().bold());
+    // println!("Response:\n{}", String::from_utf8_lossy(&response_bytes).green().bold());
     
     stream.write_all(&response_bytes).unwrap();
     stream.flush().unwrap();
@@ -66,7 +66,7 @@ fn landing_page() -> HttpResponse {
 
 fn echo_handler(path: &str) -> HttpResponse {
     let echo = path.split('/').nth(2).unwrap_or("");
-    println!("{} : {}", "[Echo handler]:".blue(), echo.yellow().bold());
+    // println!("{} : {}", "[Echo handler]:".blue(), echo.yellow().bold());
 
     let mut response = HttpResponse::new("200 OK");
     response.add_header("Content-Type", "text/plain");
@@ -98,10 +98,10 @@ fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>) -> 
             return HttpResponse::new("400 Bad Request");
         }
     };
-    println!("[file_handler] Filename: {}", filename.yellow().italic());
+    // println!("[file_handler] Filename: {}", filename.yellow().italic());
 
     let file_path = Path::new(&directory).join(filename);
-    println!("[file_handler] File path: {:?}", file_path);
+    // println!("[file_handler] File path: {:?}", file_path);
 
     match method {
         "GET" => {
@@ -121,7 +121,7 @@ fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>) -> 
         }
 
         "POST" => {
-            println!("[file_handler] POST detected with body length: {}", body.len());
+            // println!("[file_handler] POST detected with body length: {}", body.len());
 
             if let Some(parent) = file_path.parent() {
                 if let Err(e) = fs::create_dir_all(parent) {
