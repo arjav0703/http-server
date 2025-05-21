@@ -200,7 +200,7 @@ fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>, all
 }
 
 fn file_restrictor(filename: &str) -> Result<(), HttpResponse> {
-    if filename.starts_with('.') {
+    if filename.starts_with('.') || filename.starts_with('_') {
         eprintln!("[file_restrictor] Request Denied for: {} as it begins with a '.'", filename);
         return Err(HttpResponse::new("403 Forbidden"));
     }
