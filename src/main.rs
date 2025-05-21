@@ -27,14 +27,14 @@ fn run(port:&str) {
 
     for stream in listener.incoming() {
         match stream {
-            Ok(stream) => {
+            Ok(mut stream) => {
                 let msg = "Accepted new connection";
                 println!("{}", msg.green());
 
                 let dir = directory.map(|s| s.to_string());
 
-                thread::spawn(move || {
-                    handle_req(stream, dir);
+                thread::spawn(move || loop {
+                    handle_req(&mut stream, &dir);
                 });
             }
             Err(e) => {

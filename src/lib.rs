@@ -8,9 +8,9 @@ use flate2::write::GzEncoder;
 use flate2::Compression;
 
 
-pub fn handle_req(mut stream: TcpStream, directory: Option<String>) {
-    let mut reader = BufReader::new(&stream);
-    let (path, method, headers, body) = reqreader(&mut reader);
+pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) {
+    let reader = BufReader::new(&mut *stream);
+    let (path, method, headers, body) = reqreader(reader);
 
     let mut response = if path == "/" {
         HttpResponse::new("200 OK")
@@ -19,7 +19,7 @@ pub fn handle_req(mut stream: TcpStream, directory: Option<String>) {
     } else if path.starts_with("/user-agent") {
         agent_handler(&headers)
     } else if path.starts_with("/files/") && directory.is_some() {
-        file_handler(&path, &method, directory.unwrap(), body)
+        file_handler(&path, &method, &directory.clone().unwrap(), body)
     } else {
         HttpResponse::new("404 Not Found")
     };
@@ -62,7 +62,7 @@ fn agent_handler(headers: &HashMap<String, String>) -> HttpResponse {
     response
 }
 
-fn file_handler(path: &str, method: &str, directory: String, body: Vec<u8>) -> HttpResponse {
+fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>) -> HttpResponse {
     println!("[file_handler] method: {}", method.red().bold());
 
     let filename = match path.strip_prefix("/files/") {
@@ -121,7 +121,7 @@ fn file_handler(path: &str, method: &str, directory: String, body: Vec<u8>) -> H
 }
 
 fn reqreader<R: BufRead + Read>(
-    reader: &mut R,
+    mut reader:  R,
 ) -> (String, String, HashMap<String, String>, Vec<u8>) {
     let mut request_line = String::new();
     reader.read_line(&mut request_line).unwrap();
