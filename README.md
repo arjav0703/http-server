@@ -58,3 +58,6 @@ cargo build --release
 5. User agent:
     The server will respond with the user agent string on sending a request to `http://localhost:8080/user-agent`.
 
+6. File Protection: 
+    The server will not allow access to files beginning with a '.' or a '_'
+
