@@ -6,7 +6,43 @@ use std::path::Path;
 use colored::Colorize;
 use flate2::write::GzEncoder;
 use flate2::Compression;
+use std::env;
 
+pub fn getargs() -> (Option<String>, Option<String>) {
+    let args: Vec<String> = env::args().collect();
+
+    let mut port: Option<String> = None;
+    let mut directory: Option<String> = None;
+
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--port" => {
+                if i + 1 < args.len() {
+                    port = Some(args[i + 1].clone());
+                    i += 1;
+                }
+            }
+            "--directory" => {
+                if i + 1 < args.len() {
+                    directory = Some(args[i + 1].clone());
+                    i += 1;
+                }
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+
+    if port.is_none() {
+        port = Some("8080".to_string());
+    }
+    if directory.is_none() {
+        directory = Some(".".to_string());
+    }
+
+    (port, directory)
+}
 
 pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) -> bool {
     let reader = BufReader::new(&mut *stream);
