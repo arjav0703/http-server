@@ -45,6 +45,12 @@ pub fn getargs() -> (Option<String>, Option<String>, bool) {
         directory = Some(".".to_string());
     }
 
+    if !allow_write{
+        println!("{}", String::from("NOTE: Write access is not allowed").red().bold());
+    } else {
+        println!("{}", String::from("NOTE: Write access is allowed").red().bold());
+    }
+
     (port, directory, allow_write)
 }
 
