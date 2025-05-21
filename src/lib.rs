@@ -30,11 +30,7 @@ pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) -> bool {
         response.add_header("Content-Encoding", "gzip");
         }
     }
-
-    let response_bytes = response.as_bytes();
-    println!("Response:\n{}", String::from_utf8_lossy(&response_bytes).green().bold());
-
-    
+  
     let connection_close = headers.get("Connection")
         .map(|v| v.to_lowercase() == "close")
         .unwrap_or(false);
@@ -44,7 +40,10 @@ pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) -> bool {
     } else {
         response.add_header("Connection", "keep-alive");
     }
-
+ 
+    let response_bytes = response.as_bytes();
+    println!("Response:\n{}", String::from_utf8_lossy(&response_bytes).green().bold());
+    
     stream.write_all(&response_bytes).unwrap();
     stream.flush().unwrap();
 
