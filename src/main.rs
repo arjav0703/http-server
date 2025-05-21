@@ -11,32 +11,42 @@ fn main() {
 
 }
 
-fn getargs() -> (Option<String> , Option<String>) {
+fn getargs() -> (Option<String>, Option<String>) {
     let args: Vec<String> = env::args().collect();
-    let mut directory = None;
-    let default_dir = String::from(".");
 
-    for i in 0..args.len() - 1 {
-        if args[i] == "--directory" {
-            directory = Some(&args[i + 1]);
-        } else {
-            directory = Some(&default_dir);
+    let mut port: Option<String> = None;
+    let mut directory: Option<String> = None;
+
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--port" => {
+                if i + 1 < args.len() {
+                    port = Some(args[i + 1].clone());
+                    i += 1;
+                }
+            }
+            "--directory" => {
+                if i + 1 < args.len() {
+                    directory = Some(args[i + 1].clone());
+                    i += 1;
+                }
+            }
+            _ => {}
         }
+        i += 1;
     }
 
-    let args: Vec<String> = env::args().collect();
-    let mut port = None;
-    let default_port = String::from("8080");
-
-    for i in 0..args.len() - 1 {
-        if args[i] == "--port" {
-            port = Some(&args[i + 1]);
-        } else {
-            port = Some(&default_port);
-        }
+    if port.is_none() {
+        port = Some("8080".to_string());
     }
-    (port.cloned() , directory.cloned())
+    if directory.is_none() {
+        directory = Some(".".to_string());
+    }
+
+    (port, directory)
 }
+
 
 fn run(port:&String, directory: Option<&str>) {
     println!("🚀 Starting server on port: {}", port);
