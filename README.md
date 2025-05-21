@@ -1,10 +1,10 @@
 # HTTP Server
 
-This is a simple HTTP server written in Rust 🦀
+This is a fast and lightweight (less than 1 MB) HTTP server written in Rust 🦀
 
 --- 
 ## Usage
-1. Download the binary from github releases.
+1. Download the binary from [github releases](https://github.com/arjav0703/http-server/releases/).
 2. Run the following command to start the server:
 ```
 http-server --directory ./
