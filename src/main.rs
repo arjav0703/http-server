@@ -6,9 +6,6 @@ use colored::Colorize;
 
 fn main() {
     
-    // let port = "8080";
-// .    println!("🚀 Server started on port {}", port.yellow().bold());
-    
     let (port, directory) = getargs();
     run(&port.expect("Using default port"), directory.as_deref());
 
@@ -17,25 +14,32 @@ fn main() {
 fn getargs() -> (Option<String> , Option<String>) {
     let args: Vec<String> = env::args().collect();
     let mut directory = None;
+    let default_dir = String::from(".");
 
     for i in 0..args.len() - 1 {
         if args[i] == "--directory" {
             directory = Some(&args[i + 1]);
+        } else {
+            directory = Some(&default_dir);
         }
     }
 
     let args: Vec<String> = env::args().collect();
     let mut port = None;
+    let default_port = String::from("8080");
 
     for i in 0..args.len() - 1 {
         if args[i] == "--port" {
             port = Some(&args[i + 1]);
+        } else {
+            port = Some(&default_port);
         }
     }
     (port.cloned() , directory.cloned())
 }
 
 fn run(port:&String, directory: Option<&str>) {
+    println!("🚀 Starting server on port: {}", port);
 
     let listener = TcpListener::bind(format!("0.0.0.0:{}", port)).unwrap();
 
