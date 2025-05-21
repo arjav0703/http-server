@@ -8,11 +8,12 @@ use flate2::write::GzEncoder;
 use flate2::Compression;
 use std::env;
 
-pub fn getargs() -> (Option<String>, Option<String>) {
+pub fn getargs() -> (Option<String>, Option<String>, bool) {
     let args: Vec<String> = env::args().collect();
 
     let mut port: Option<String> = None;
     let mut directory: Option<String> = None;
+    let mut allow_write= false ;
 
     let mut i = 1;
     while i < args.len() {
@@ -29,6 +30,9 @@ pub fn getargs() -> (Option<String>, Option<String>) {
                     i += 1;
                 }
             }
+            "--allow-write" => {
+                allow_write = true;
+            }
             _ => {}
         }
         i += 1;
@@ -41,10 +45,10 @@ pub fn getargs() -> (Option<String>, Option<String>) {
         directory = Some(".".to_string());
     }
 
-    (port, directory)
+    (port, directory, allow_write)
 }
 
-pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) -> bool {
+pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>, allow_write:bool) -> bool {
     let reader = BufReader::new(&mut *stream);
     let (path, method, headers, body) = reqreader(reader);
 
@@ -55,7 +59,7 @@ pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) -> bool {
     } else if path.starts_with("/user-agent") {
         agent_handler(&headers)
     } else if path.starts_with("/files/") && directory.is_some() {
-        file_handler(&path, &method, &directory.clone().unwrap(), body)
+        file_handler(&path, &method, &directory.clone().unwrap(), body, allow_write)
     } else {
         HttpResponse::new("404 Not Found")
     };
@@ -124,7 +128,7 @@ fn agent_handler(headers: &HashMap<String, String>) -> HttpResponse {
     response
 }
 
-fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>) -> HttpResponse {
+fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>, allow_write:bool) -> HttpResponse {
     println!("[file_handler] method: {}", method.red().bold());
 
     let filename = match path.strip_prefix("/files/") {
@@ -158,6 +162,11 @@ fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>) -> 
 
         "POST" => {
             // println!("[file_handler] POST detected with body length: {}", body.len());
+            dbg!(&allow_write);
+            if !allow_write {
+                eprintln!("[file_handler] Write access denied");
+                return HttpResponse::new("403 Forbidden");
+            }
 
             if let Some(parent) = file_path.parent() {
                 if let Err(e) = fs::create_dir_all(parent) {

@@ -6,12 +6,12 @@ use colored::Colorize;
 
 fn main() {
     
-    let (port, directory) = getargs();
-    run(&port.expect("Using default port"), directory.as_deref());
+    let (port, directory, allow_write) = getargs();
+    run(&port.expect("Using default port"), directory.as_deref(), allow_write);
 
 }
 
-fn run(port:&String, directory: Option<&str>) {
+fn run(port:&String, directory: Option<&str>, allow_write: bool) {
     println!("🚀 Starting server on port: {}", port);
 
     let listener = TcpListener::bind(format!("0.0.0.0:{}", port)).unwrap();
@@ -25,10 +25,11 @@ fn run(port:&String, directory: Option<&str>) {
                 let dir = directory.map(|s| s.to_string());
                 thread::spawn(move || {
                 loop {
-                    let should_close = handle_req(&mut stream, &dir);
+                    let should_close = handle_req(&mut stream, &dir, allow_write);
+                        
                     if should_close {
-                    println!("[Connection] Closing stream as requested");
-                    break;
+                        println!("[Connection] Closing stream as requested");
+                        break;
                     }
                 }       
 });
