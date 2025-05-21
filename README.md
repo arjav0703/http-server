@@ -15,6 +15,8 @@ Note: Make sure that port 8080 is not in use. (TODO) You can change the port by 
 curl http://localhost:8080/echo/hello-world
 ```
 
+---
+
 ## Building from source:
 0. Make sure you have 🦀 Rust installed. You can install it from [rustup.rs](https://rustup.rs/).
 1. Clone the repository:
@@ -33,4 +35,22 @@ cargo build --release
 ```bash
 ./target/release/http-server --directory ./
 ```
-Refer to the usage section for more details.
+
+---
+
+## Features
+1. File serving
+    You can access any file in the specified directory using the URL `http://localhost:8080/files/<filename>`.
+
+2. File Creation
+    You can create a file by sending a POST request with the file content to the URL `http://localhost:8080/files/<filename>`. The server will create a file with the specified name in the specified directory.
+
+3. File Updation
+    You can update a file by sending a POST request with the new content to the URL `http://localhost:8080/files/<filename>`. The server will update the file with the specified name in the specified directory.
+
+4. Route echo
+    You can echo any string using the URL `http://localhost:8080/echo/<string>`. The server will respond with the same string.
+
+5. User agent
+    The server will respond with the user agent string on sending a request to `http://localhost:8080/user-agent`.
+
