@@ -7,13 +7,16 @@ This is a fast and lightweight (less than 1 MB) HTTP server written in Rust 🦀
 1. Download the binary from [github releases](https://github.com/arjav0703/http-server/releases/).
 2. Run the following command to start the server:
 ```
-http-server --directory ./
+http-server
 ```
-Note: Make sure that port 8080 is not in use. (TODO) You can change the port by using the `--port` flag.
+Note: Make sure that port 8080 is not in use. You can change the port by using the `--port` flag.
 3. Make your first request:
 ```bash
 curl http://localhost:8080/echo/hello-world
 ```
+### Options:
+- `--port <port>`: Specify the port to run the server on. Default is 8080.
+- `--directory <directory>`: Specify the directory to serve files from. Default is the current directory.
 
 ---
 
@@ -39,6 +42,7 @@ cargo build --release
 ---
 
 ## Features
+0. Port and directory configuration through command line arguments.
 1. File serving:
     You can access any file in the specified directory using the URL `http://localhost:8080/files/<filename>`.
 
