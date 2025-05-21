@@ -13,7 +13,7 @@ pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) {
     let (path, method, headers, body) = reqreader(reader);
 
     let mut response = if path == "/" {
-        HttpResponse::new("200 OK")
+        landing_page()
     } else if path.starts_with("/echo/") {
         echo_handler(&path)
     } else if path.starts_with("/user-agent") {
@@ -36,6 +36,20 @@ pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) {
 
     stream.write_all(&response_bytes).unwrap();
     stream.flush().unwrap();
+}
+
+fn landing_page() -> HttpResponse {
+    let mut response = HttpResponse::new("200 OK");
+    response.add_header("Content-Type", "text/html");
+
+    let lander = Path::new("index.html");
+    let indexpage = fs::read_to_string(lander).unwrap_or_else(|_| {
+        eprintln!("[landing_page] Error reading index.html");
+        "<html><body><h1>Make sure that that index.html exists</h1></body></html>".to_string()
+    });
+
+    response.set_body(indexpage.as_bytes());
+    response
 }
 
 fn echo_handler(path: &str) -> HttpResponse {
