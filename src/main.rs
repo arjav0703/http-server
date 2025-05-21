@@ -32,10 +32,16 @@ fn run(port:&str) {
                 println!("{}", msg.green());
 
                 let dir = directory.map(|s| s.to_string());
+                thread::spawn(move || {
+                loop {
+                    let should_close = handle_req(&mut stream, &dir);
+                    if should_close {
+                    println!("[Connection] Closing stream as requested");
+                    break;
+                    }
+                }       
+});
 
-                thread::spawn(move || loop {
-                    handle_req(&mut stream, &dir);
-                });
             }
             Err(e) => {
                 eprintln!("error: {}", e);

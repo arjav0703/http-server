@@ -8,7 +8,7 @@ use flate2::write::GzEncoder;
 use flate2::Compression;
 
 
-pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) {
+pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) -> bool {
     let reader = BufReader::new(&mut *stream);
     let (path, method, headers, body) = reqreader(reader);
 
@@ -34,8 +34,21 @@ pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>) {
     let response_bytes = response.as_bytes();
     println!("Response:\n{}", String::from_utf8_lossy(&response_bytes).green().bold());
 
+    
+    let connection_close = headers.get("Connection")
+        .map(|v| v.to_lowercase() == "close")
+        .unwrap_or(false);
+
+    if connection_close {
+        response.add_header("Connection", "close");
+    } else {
+        response.add_header("Connection", "keep-alive");
+    }
+
     stream.write_all(&response_bytes).unwrap();
     stream.flush().unwrap();
+
+    connection_close
 }
 
 fn landing_page() -> HttpResponse {
@@ -220,7 +233,6 @@ impl HttpResponse {
                 headers.insert("Content-Length".to_string(), body.len().to_string());
             }
         }
-
         let mut response = format!("HTTP/1.1 {}\r\n", self.status);
 
         for (key, value) in &headers {
