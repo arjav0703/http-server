@@ -148,6 +148,9 @@ fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>, all
 
     let file_path = Path::new(&directory).join(filename);
     // println!("[file_handler] File path: {:?}", file_path);
+    if let Err(resp) = file_restrictor(&filename) {
+    return resp;
+    }
 
     match method {
         "GET" => {
@@ -196,6 +199,14 @@ fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>, all
     }
 }
 
+fn file_restrictor(filename: &str) -> Result<(), HttpResponse> {
+    if filename.starts_with('.') {
+        eprintln!("[file_restrictor] Request Denied for: {} as it begins with a '.'", filename);
+        return Err(HttpResponse::new("403 Forbidden"));
+    }
+    Ok(())
+}
+
 fn reqreader<R: BufRead + Read>(
     mut reader:  R,
 ) -> (String, String, HashMap<String, String>, Vec<u8>) {
@@ -205,10 +216,10 @@ fn reqreader<R: BufRead + Read>(
     println!("request: {}", request_line);
 
     let method = request_line.split_whitespace().nth(0).unwrap().to_string();
-    println!("method: {}", &method);
+    // println!("method: {}", &method);
 
     let path = request_line.split_whitespace().nth(1).unwrap().to_string();
-    println!("path: {}", path);
+    // println!("path: {}", path);
 
     let mut headers = HashMap::new();
     let mut content_length = 0;
@@ -231,7 +242,7 @@ fn reqreader<R: BufRead + Read>(
         }
     }
 
-    println!("Headers: {:?}", headers);
+    // println!("Headers: {:?}", headers);
 
     // Read body
     let mut body = Vec::new();

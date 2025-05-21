@@ -28,7 +28,7 @@ fn run(port:&String, directory: Option<&str>, allow_write: bool) {
                     let should_close = handle_req(&mut stream, &dir, allow_write);
                         
                     if should_close {
-                        println!("[Connection] Closing stream as requested");
+                        // println!("[Connection] Closing stream as requested");
                         break;
                     }
                 }       
