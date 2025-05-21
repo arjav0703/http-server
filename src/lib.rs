@@ -125,7 +125,7 @@ fn agent_handler(headers: &HashMap<String, String>) -> HttpResponse {
     let unknown = "Unknown".to_string();
     let user_agent = headers.get("User-Agent").unwrap_or(&unknown);
 
-    println!("[Agent-handler] User-Agent: {}", user_agent.bright_yellow().bold());
+    // println!("[Agent-handler] User-Agent: {}", user_agent.bright_yellow().bold());
 
     let mut response = HttpResponse::new("200 OK");
     response.add_header("Content-Type", "text/plain");
@@ -135,7 +135,7 @@ fn agent_handler(headers: &HashMap<String, String>) -> HttpResponse {
 }
 
 fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>, allow_write:bool) -> HttpResponse {
-    println!("[file_handler] method: {}", method.red().bold());
+    // println!("[file_handler] method: {}", method.red().bold());
 
     let filename = match path.strip_prefix("/files/") {
         Some(f) => f,
@@ -153,7 +153,7 @@ fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>, all
         "GET" => {
             match fs::read(&file_path) {
                 Ok(contents) => {
-                    println!("[file_handler] File found");
+                    // println!("[file_handler] File found");
                     let mut response = HttpResponse::new("200 OK");
                     response.add_header("Content-Type", "application/octet-stream");
                     response.set_body(&contents);
@@ -168,7 +168,6 @@ fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>, all
 
         "POST" => {
             // println!("[file_handler] POST detected with body length: {}", body.len());
-            dbg!(&allow_write);
             if !allow_write {
                 eprintln!("[file_handler] Write access denied");
                 return HttpResponse::new("403 Forbidden");
