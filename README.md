@@ -17,7 +17,7 @@ curl http://localhost:8080/echo/hello-world
 ### Options:
 - `--port <port>`: Specify the port to run the server on. Default is 8080.
 - `--directory <directory>`: Specify the directory to serve files from. Default is the current directory.
-
+-- `--allow-write`: Allow writing to the specified directory. This will allow you to create and update files in the specified directory through sending a POST request to /files/<foobar> and along with content.
 ---
 
 ## Building from source:
@@ -42,7 +42,7 @@ cargo build --release
 ---
 
 ## Features
-0. Port and directory configuration through command line arguments.
+0. Port, directory, and write access configuration through command line arguments.
 1. File serving:
     You can access any file in the specified directory using the URL `http://localhost:8080/files/<filename>`.
 
