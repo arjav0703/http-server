@@ -1,11 +1,66 @@
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  </head>
-  <body>
-    <h1 class="text-3xl">Welcome to HTTP server></h1>
-    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RustHTTP - Lightweight Rust HTTP Server</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
 
-  </body>
+  <header class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold text-blue-600">RustHTTP 🦀</h1>
+      <a href="https://github.com/arjav0703/http-server" target="_blank" class="text-blue-500 hover:text-blue-700 font-medium">View on GitHub</a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-br from-blue-100 to-white py-20">
+    <div class="max-w-4xl mx-auto text-center px-4">
+      <h2 class="text-4xl font-bold text-gray-900 mb-4">Fast, and Minimal HTTP Server written in Rust 🦀</h2>
+      <p class="text-lg text-gray-700 mb-6">
+        RustHTTP is an open-source HTTP server built in Rust. Blazing fast, and designed for embedded and cloud-native systems.
+      </p>
+      <a href="https://github.com/arjav0703/http-server" class="bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700 transition">
+        Get Started
+      </a>
+    </div>
+  </section>
+
+  <section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-6">
+      <h3 class="text-3xl font-semibold text-gray-900 mb-12 text-center">Features</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        
+        <div class="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition">
+          <h4 class="text-xl font-semibold mb-2 text-blue-600">Zero Dependencies</h4>
+          <p class="text-gray-700">A pure Rust 🦀 implementation with no external runtime or library requirements.</p>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition">
+          <h4 class="text-xl font-semibold mb-2 text-blue-600">Secure by Design</h4>
+          <p class="text-gray-700">Memory safety guaranteed by Rust. Includes basic protection against common attacks.</p>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition">
+          <h4 class="text-xl font-semibold mb-2 text-blue-600">Embedded-Ready</h4>
+          <p class="text-gray-700">Lightweight enough to run on edge devices or single-board computers with limited resources.</p>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition">
+          <h4 class="text-xl font-semibold mb-2 text-blue-600">Open Source</h4>
+          <p class="text-gray-700">Licensed under MIT. Actively maintained and open to community contributions.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-gray-100 py-6 text-center text-sm text-gray-600">
+    <p>&copy; 2025 RustHTTP Project. Built with ❤️ in Rust 🦀.</p>
+  </footer>
+
+</body>
 </html>
+
