@@ -3,66 +3,8 @@ use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::TcpStream;
 use std::path::Path;
-use colored::Colorize;
 use flate2::write::GzEncoder;
 use flate2::Compression;
-use std::env;
-
-pub fn getargs() -> (Option<String>, Option<String>, bool, u64) {
-    let args: Vec<String> = env::args().collect();
-
-    let mut port: Option<String> = None;
-    let mut directory: Option<String> = None;
-    let mut allow_write= false ;
-
-    let def_timeout = 2;
-    let mut timeout = def_timeout;
-    
-    let mut i = 1;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--port" => {
-                if i + 1 < args.len() {
-                    port = Some(args[i + 1].clone());
-                    i += 1;
-                }
-            }
-            "--directory" => {
-                if i + 1 < args.len() {
-                    directory = Some(args[i + 1].clone());
-                    i += 1;
-                }
-            }
-            "--allow-write" => {
-                allow_write = true;
-            }
-            "--timeout" => {
-                if i + 1 < args.len() {
-                    timeout = args[i + 1].parse::<u64>().unwrap_or(def_timeout);
-                    println!("Timeout set to {} seconds", timeout);
-                    i += 1;
-                }
-            }
-            _ => {}
-        }
-        i += 1;
-    }
-
-    if port.is_none() {
-        port = Some("8080".to_string());
-    }
-    if directory.is_none() {
-        directory = Some(".".to_string());
-    }
-
-    if !allow_write{
-        println!("{}", String::from("NOTE: Write access is not allowed").red().bold());
-    } else {
-        println!("{}", String::from("NOTE: Write access is allowed").red().bold());
-    }
-
-    (port, directory, allow_write, timeout)
-}
 
 pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>, allow_write:bool) -> bool {
     let reader = BufReader::new(&mut *stream);
