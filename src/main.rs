@@ -1,15 +1,13 @@
-use http_server::handle_req;
-use std::thread;
-use std::net::{TcpListener};
 use colored::Colorize;
+use http_server::handle_req;
+use std::net::TcpListener;
+use std::thread;
 use std::time::Duration;
 mod argsparser;
 
 fn main() {
-    
     let (port, directory, allow_write, timeout) = argsparser::getargs();
     run(port, directory.as_deref(), allow_write, timeout);
-
 }
 
 fn run(port: u16, directory: Option<&str>, allow_write: bool, timeout: u64) {
@@ -28,13 +26,11 @@ fn run(port: u16, directory: Option<&str>, allow_write: bool, timeout: u64) {
                 stream.set_write_timeout(Some(timeout)).unwrap();
 
                 let dir = directory.map(|s| s.to_string());
-                thread::spawn(move || {
-                    loop {
-                        let should_close = handle_req(&mut stream, &dir, allow_write);
+                thread::spawn(move || loop {
+                    let should_close = handle_req(&mut stream, &dir, allow_write);
 
-                        if should_close {
-                            break;
-                        }
+                    if should_close {
+                        break;
                     }
                 });
             }

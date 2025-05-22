@@ -1,12 +1,12 @@
+use flate2::write::GzEncoder;
+use flate2::Compression;
 use std::collections::HashMap;
 use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::TcpStream;
 use std::path::Path;
-use flate2::write::GzEncoder;
-use flate2::Compression;
 
-pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>, allow_write:bool) -> bool {
+pub fn handle_req(stream: &mut TcpStream, directory: &Option<String>, allow_write: bool) -> bool {
     let reader = BufReader::new(&mut *stream);
     let (path, method, headers, body) = reqreader(reader);
 
@@ -17,7 +17,13 @@ pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>, allow_wri
     } else if path.starts_with("/user-agent") {
         agent_handler(&headers)
     } else if path.starts_with("/files/") && directory.is_some() {
-        file_handler(&path, &method, &directory.clone().unwrap(), body, allow_write)
+        file_handler(
+            &path,
+            &method,
+            &directory.clone().unwrap(),
+            body,
+            allow_write,
+        )
     } else {
         HttpResponse::new("404 Not Found")
     };
@@ -25,11 +31,12 @@ pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>, allow_wri
     if let Some(encoding) = headers.get("Accept-Encoding") {
         response.add_header("Accept-Encoding", encoding);
         if encoding.contains("gzip") {
-        response.add_header("Content-Encoding", "gzip");
+            response.add_header("Content-Encoding", "gzip");
         }
     }
-  
-    let connection_close = headers.get("Connection")
+
+    let connection_close = headers
+        .get("Connection")
         .map(|v| v.to_lowercase() == "close")
         .unwrap_or(false);
 
@@ -38,10 +45,10 @@ pub fn handle_req( stream: &mut TcpStream, directory: &Option<String>, allow_wri
     } else {
         response.add_header("Connection", "keep-alive");
     }
- 
+
     let response_bytes = response.as_bytes();
     // println!("Response:\n{}", String::from_utf8_lossy(&response_bytes).green().bold());
-    
+
     stream.write_all(&response_bytes).unwrap();
     stream.flush().unwrap();
 
@@ -86,7 +93,13 @@ fn agent_handler(headers: &HashMap<String, String>) -> HttpResponse {
     response
 }
 
-fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>, allow_write:bool) -> HttpResponse {
+fn file_handler(
+    path: &str,
+    method: &str,
+    directory: &String,
+    body: Vec<u8>,
+    allow_write: bool,
+) -> HttpResponse {
     // println!("[file_handler] method: {}", method.red().bold());
 
     let filename = match path.strip_prefix("/files/") {
@@ -101,7 +114,7 @@ fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>, all
     let file_path = Path::new(&directory).join(filename);
     // println!("[file_handler] File path: {:?}", file_path);
     if let Err(resp) = file_restrictor(&filename) {
-    return resp;
+        return resp;
     }
 
     match method {
@@ -153,14 +166,17 @@ fn file_handler(path: &str, method: &str, directory: &String, body: Vec<u8>, all
 
 fn file_restrictor(filename: &str) -> Result<(), HttpResponse> {
     if filename.starts_with('.') || filename.starts_with('_') {
-        eprintln!("[file_restrictor] Request Denied for: {} as it begins with a '.'", filename);
+        eprintln!(
+            "[file_restrictor] Request Denied for: {} as it begins with a '.'",
+            filename
+        );
         return Err(HttpResponse::new("403 Forbidden"));
     }
     Ok(())
 }
 
 fn reqreader<R: BufRead + Read>(
-    mut reader:  R,
+    mut reader: R,
 ) -> (String, String, HashMap<String, String>, Vec<u8>) {
     let mut request_line = String::new();
     reader.read_line(&mut request_line).unwrap();
@@ -258,4 +274,3 @@ impl HttpResponse {
         bytes
     }
 }
-
