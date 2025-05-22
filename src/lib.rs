@@ -274,3 +274,46 @@ impl HttpResponse {
         bytes
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_http_response_builder() {
+        let mut response = HttpResponse::new("200 OK");
+        response.add_header("Content-Type", "text/plain");
+        response.set_body(b"Hello");
+
+        let bytes = response.as_bytes();
+        let response_str = String::from_utf8_lossy(&bytes);
+
+        assert!(response_str.contains("HTTP/1.1 200 OK"));
+        assert!(response_str.contains("Content-Type: text/plain"));
+        assert!(response_str.contains("Content-Length: 5"));
+        assert!(response_str.ends_with("Hello"));
+    }
+
+    #[test]
+    fn test_file_restrictor_blocks_dotfiles() {
+        assert!(file_restrictor(".secret").is_err());
+        assert!(file_restrictor("_config").is_err());
+        assert!(file_restrictor("validfile.txt").is_ok());
+    }
+
+    #[test]
+    fn test_reqreader_parses_request_line_and_headers() {
+        use std::io::Cursor;
+
+        let raw_request = b"GET /hello HTTP/1.1\r\nHost: localhost\r\nContent-Length: 5\r\n\r\nhello";
+        let cursor = Cursor::new(raw_request);
+        let (path, method, headers, body) = reqreader(cursor);
+
+        assert_eq!(method, "GET");
+        assert_eq!(path, "/hello");
+        assert_eq!(headers.get("Host").unwrap(), "localhost");
+        assert_eq!(body, b"hello");
+    }
+}
+
