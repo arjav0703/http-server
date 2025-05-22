@@ -32,6 +32,6 @@ jobs:
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v1
         with:
-          files: target/release/your_binary_name
+          files: target/release/http-server
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
