@@ -6,6 +6,6 @@ edition = "2021"
 rust-version = "1.80"
 
 [dependencies]
-clap = "4.5.38"
+clap = { version = "4.5.38", features = ["derive"] }
 colored = "3.0.0"
 flate2 = "1.1.1"

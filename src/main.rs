@@ -4,6 +4,7 @@ use std::thread;
 use std::net::{TcpListener};
 use colored::Colorize;
 use std::time::Duration;
+mod argsparser;
 
 fn main() {
     
