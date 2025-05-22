@@ -1,6 +1,6 @@
 # HTTP Server
 
-This is a fast and lightweight (less than 1 MB) HTTP server written in Rust 🦀
+This is a fast and lightweight (less than 2 MB) HTTP server written in Rust 🦀
 
 --- 
 ## Usage
