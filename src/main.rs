@@ -7,12 +7,12 @@ use std::time::Duration;
 
 fn main() {
     
-    let (port, directory, allow_write) = getargs();
-    run(&port.expect("Using default port"), directory.as_deref(), allow_write);
+    let (port, directory, allow_write, timeout) = getargs();
+    run(&port.expect("Using default port"), directory.as_deref(), allow_write, timeout);
 
 }
 
-fn run(port: &String, directory: Option<&str>, allow_write: bool) {
+fn run(port: &String, directory: Option<&str>, allow_write: bool, timeout: u64) {
     println!("🚀 Starting server on port: {}", port);
 
     let listener = TcpListener::bind(format!("0.0.0.0:{}", port)).unwrap();
@@ -22,9 +22,8 @@ fn run(port: &String, directory: Option<&str>, allow_write: bool) {
             Ok(mut stream) => {
                 let msg = "Accepted new connection";
                 println!("{}", msg.green());
-                
-                // TODO: make the timepout adjustable via --timeout flag
-                let timeout = Duration::from_secs(15);
+
+                let timeout = Duration::from_secs(timeout);
                 stream.set_read_timeout(Some(timeout)).unwrap();
                 stream.set_write_timeout(Some(timeout)).unwrap();
 
