@@ -4,6 +4,14 @@ version = "0.1.0"
 authors = ["Arjav Jain <arjavjain0703@gmail.com>"]
 edition = "2021"
 rust-version = "1.80"
+license = "Apache-2.0 OR MIT"
+description = "A lightweight HTTP server for serving static files"
+readme = "README.md"
+homepage = "https://github.com/arjav0703/http-server"
+repository = "https://github.com/arjav0703/http-server"
+keywords = ["cli", "http-server"]
+categories = ["command-line-utilities"]
+
 
 [dependencies]
 clap = { version = "4.5.38", features = ["derive"] }
