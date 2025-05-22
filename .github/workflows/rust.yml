@@ -6,29 +6,32 @@ on:
   pull_request:
     branches: [ "master" ]
   release:
-    types: [created]
+    types: [created] # Triggers when a new GitHub Release is created
+
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Rust
-        uses: actions/setup-rust@v1
+        uses: actions-rs/toolchain@v1
         with:
-          rust-version: stable
+          toolchain: stable
+          profile: minimal
+          override: true
 
       - name: Build
         run: cargo build --release
 
-      - name: Upload Release Asset
+      - name: Upload Release Binary
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            target/release/http-server
+          files: target/release/your_binary_name
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
