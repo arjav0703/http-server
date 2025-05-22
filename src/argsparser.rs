@@ -9,7 +9,7 @@ pub struct Cli {
     #[clap(short, long, default_value = ".")]
     directory: Option<String>,
 
-    #[clap(short, long)]
+    #[clap(long, default_value = "false")]
     allow_write: bool,
 
     #[clap(short, long, default_value = "2")]
