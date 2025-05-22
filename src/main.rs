@@ -1,5 +1,4 @@
 use http_server::handle_req;
-use http_server::getargs;
 use std::thread;
 use std::net::{TcpListener};
 use colored::Colorize;
@@ -8,12 +7,12 @@ mod argsparser;
 
 fn main() {
     
-    let (port, directory, allow_write, timeout) = getargs();
-    run(&port.expect("Using default port"), directory.as_deref(), allow_write, timeout);
+    let (port, directory, allow_write, timeout) = argsparser::getargs();
+    run(port, directory.as_deref(), allow_write, timeout);
 
 }
 
-fn run(port: &String, directory: Option<&str>, allow_write: bool, timeout: u64) {
+fn run(port: u16, directory: Option<&str>, allow_write: bool, timeout: u64) {
     println!("🚀 Starting server on port: {}", port);
 
     let listener = TcpListener::bind(format!("0.0.0.0:{}", port)).unwrap();
