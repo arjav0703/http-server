@@ -7,7 +7,6 @@ mod argsparser;
 
 fn main() {
     let (port, directory, allow_write, timeout) = argsparser::getargs();
-    dbg!(allow_write);
     run(port, directory.as_deref(), allow_write, timeout);
 
 }
