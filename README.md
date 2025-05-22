@@ -14,10 +14,13 @@ Note: Make sure that port 8080 is not in use. You can change the port by using t
 ```bash
 curl http://localhost:8080/echo/hello-world
 ```
-### Options:
-- `--port <port>`: Specify the port to run the server on. Default is 8080.
-- `--directory <directory>`: Specify the directory to serve files from. Default is the current directory.
--- `--allow-write`: Allow writing to the specified directory. This will allow you to create and update files in the specified directory through sending a POST request to /files/<foobar> and along with content.
+
+4. Run 
+```bash 
+http-server --help
+```
+for more options.
+
 ---
 
 ## Building from source:
@@ -36,7 +39,7 @@ cargo build --release
 ```
 4. Run the server 🚀:
 ```bash
-./target/release/http-server --directory ./
+./target/release/http-server
 ```
 
 ---
