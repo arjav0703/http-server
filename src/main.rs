@@ -3,6 +3,7 @@ use http_server::getargs;
 use std::thread;
 use std::net::{TcpListener};
 use colored::Colorize;
+use std::time::Duration;
 
 fn main() {
     
@@ -11,7 +12,7 @@ fn main() {
 
 }
 
-fn run(port:&String, directory: Option<&str>, allow_write: bool) {
+fn run(port: &String, directory: Option<&str>, allow_write: bool) {
     println!("🚀 Starting server on port: {}", port);
 
     let listener = TcpListener::bind(format!("0.0.0.0:{}", port)).unwrap();
@@ -21,24 +22,26 @@ fn run(port:&String, directory: Option<&str>, allow_write: bool) {
             Ok(mut stream) => {
                 let msg = "Accepted new connection";
                 println!("{}", msg.green());
+                
+                // TODO: make the timepout adjustable via --timeout flag
+                let timeout = Duration::from_secs(15);
+                stream.set_read_timeout(Some(timeout)).unwrap();
+                stream.set_write_timeout(Some(timeout)).unwrap();
 
                 let dir = directory.map(|s| s.to_string());
                 thread::spawn(move || {
-                loop {
-                    let should_close = handle_req(&mut stream, &dir, allow_write);
-                        
-                    if should_close {
-                        // println!("[Connection] Closing stream as requested");
-                        break;
-                    }
-                }       
-});
+                    loop {
+                        let should_close = handle_req(&mut stream, &dir, allow_write);
 
+                        if should_close {
+                            break;
+                        }
+                    }
+                });
             }
             Err(e) => {
                 eprintln!("error: {}", e);
             }
         }
     }
-
 }
