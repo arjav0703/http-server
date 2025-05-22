@@ -1,13 +1,15 @@
-# HTTP Server
+# Crab Http
 
 This is a fast and lightweight (less than 2 MB) HTTP server written in Rust 🦀
 
 --- 
 ## Usage
-1. Download the binary from [github releases](https://github.com/arjav0703/http-server/releases/).
+1. #### Installation
+- `cargo install crab-http`
+- Download the binary from [github releases](https://github.com/arjav0703/http-server/releases/).
 2. Run the following command to start the server:
 ```
-http-server
+crab-http
 ```
 Note: Make sure that port 8080 is not in use. You can change the port by using the `--port` flag.
 3. Make your first request:
@@ -17,7 +19,7 @@ curl http://localhost:8080/echo/hello-world
 
 4. Run 
 ```bash 
-http-server --help
+crab-http --help
 ```
 for more options.
 
@@ -39,7 +41,7 @@ cargo build --release
 ```
 4. Run the server 🚀:
 ```bash
-./target/release/http-server
+./target/release/crab-http
 ```
 
 ---
