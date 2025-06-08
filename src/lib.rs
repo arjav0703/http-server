@@ -96,7 +96,7 @@ fn file_handler(
     body: Vec<u8>,
     allow_write: bool,
 ) -> HttpResponse {
-    let file_path = Path::new(&directory).join(path);
+    let file_path = Path::new(&directory).join(path.trim_start_matches('/'));
     if let Err(resp) = file_restrictor(path) {
         return resp;
     }
