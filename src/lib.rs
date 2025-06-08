@@ -96,16 +96,8 @@ fn file_handler(
     body: Vec<u8>,
     allow_write: bool,
 ) -> HttpResponse {
-    let filename = match path.strip_prefix("/files/") {
-        Some(f) => f,
-        None => {
-            eprintln!("[file_handler] Invalid path format: {}", path);
-            return HttpResponse::new("400 Bad Request");
-        }
-    };
-
-    let file_path = Path::new(&directory).join(filename);
-    if let Err(resp) = file_restrictor(filename) {
+    let file_path = Path::new(&directory).join(path);
+    if let Err(resp) = file_restrictor(path) {
         return resp;
     }
 
