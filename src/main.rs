@@ -3,7 +3,9 @@ use std::net::TcpListener;
 use std::thread;
 use std::time::Duration;
 mod argsparser;
+mod h_res;
 mod req;
+
 fn main() {
     let (port, directory, allow_write, timeout) = argsparser::getargs();
     run(port, directory.as_deref(), allow_write, timeout);
