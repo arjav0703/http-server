@@ -16,7 +16,7 @@ pub fn handle_req(stream: &mut TcpStream, directory: &Option<String>, allow_writ
         echo_handler(&path)
     } else if path.starts_with("/user-agent") {
         agent_handler(&headers)
-    } else if path.starts_with("/files/") && directory.is_some() {
+    } else if path.starts_with("/") && directory.is_some() {
         file_handler(
             &path,
             &method,
@@ -275,7 +275,6 @@ impl HttpResponse {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -306,7 +305,8 @@ mod tests {
     fn test_reqreader_parses_request_line_and_headers() {
         use std::io::Cursor;
 
-        let raw_request = b"GET /hello HTTP/1.1\r\nHost: localhost\r\nContent-Length: 5\r\n\r\nhello";
+        let raw_request =
+            b"GET /hello HTTP/1.1\r\nHost: localhost\r\nContent-Length: 5\r\n\r\nhello";
         let cursor = Cursor::new(raw_request);
         let (path, method, headers, body) = reqreader(cursor);
 
@@ -316,4 +316,3 @@ mod tests {
         assert_eq!(body, b"hello");
     }
 }
-
