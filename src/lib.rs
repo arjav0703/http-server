@@ -47,7 +47,6 @@ pub fn handle_req(stream: &mut TcpStream, directory: &Option<String>, allow_writ
     }
 
     let response_bytes = response.as_bytes();
-    // println!("Response:\n{}", String::from_utf8_lossy(&response_bytes).green().bold());
 
     stream.write_all(&response_bytes).unwrap();
     stream.flush().unwrap();
@@ -71,7 +70,6 @@ fn landing_page() -> HttpResponse {
 
 fn echo_handler(path: &str) -> HttpResponse {
     let echo = path.split('/').nth(2).unwrap_or("");
-    // println!("{} : {}", "[Echo handler]:".blue(), echo.yellow().bold());
 
     let mut response = HttpResponse::new("200 OK");
     response.add_header("Content-Type", "text/plain");
@@ -83,8 +81,6 @@ fn echo_handler(path: &str) -> HttpResponse {
 fn agent_handler(headers: &HashMap<String, String>) -> HttpResponse {
     let unknown = "Unknown".to_string();
     let user_agent = headers.get("User-Agent").unwrap_or(&unknown);
-
-    // println!("[Agent-handler] User-Agent: {}", user_agent.bright_yellow().bold());
 
     let mut response = HttpResponse::new("200 OK");
     response.add_header("Content-Type", "text/plain");
@@ -100,8 +96,6 @@ fn file_handler(
     body: Vec<u8>,
     allow_write: bool,
 ) -> HttpResponse {
-    // println!("[file_handler] method: {}", method.red().bold());
-
     let filename = match path.strip_prefix("/files/") {
         Some(f) => f,
         None => {
@@ -109,33 +103,27 @@ fn file_handler(
             return HttpResponse::new("400 Bad Request");
         }
     };
-    // println!("[file_handler] Filename: {}", filename.yellow().italic());
 
     let file_path = Path::new(&directory).join(filename);
-    // println!("[file_handler] File path: {:?}", file_path);
-    if let Err(resp) = file_restrictor(&filename) {
+    if let Err(resp) = file_restrictor(filename) {
         return resp;
     }
 
     match method {
-        "GET" => {
-            match fs::read(&file_path) {
-                Ok(contents) => {
-                    // println!("[file_handler] File found");
-                    let mut response = HttpResponse::new("200 OK");
-                    response.add_header("Content-Type", "application/octet-stream");
-                    response.set_body(&contents);
-                    response
-                }
-                Err(_) => {
-                    eprintln!("[file_handler] File not found");
-                    HttpResponse::new("404 Not Found")
-                }
+        "GET" => match fs::read(&file_path) {
+            Ok(contents) => {
+                let mut response = HttpResponse::new("200 OK");
+                response.add_header("Content-Type", "application/octet-stream");
+                response.set_body(&contents);
+                response
             }
-        }
+            Err(_) => {
+                eprintln!("[file_handler] File not found");
+                HttpResponse::new("404 Not Found")
+            }
+        },
 
         "POST" => {
-            // println!("[file_handler] POST detected with body length: {}", body.len());
             if !allow_write {
                 eprintln!("[file_handler] Write access denied");
                 return HttpResponse::new("403 Forbidden");
@@ -183,16 +171,13 @@ fn reqreader<R: BufRead + Read>(
     request_line = request_line.trim().to_string();
     println!("request: {}", request_line);
 
-    let method = request_line.split_whitespace().nth(0).unwrap().to_string();
-    // println!("method: {}", &method);
+    let method = request_line.split_whitespace().next().unwrap().to_string();
 
     let path = request_line.split_whitespace().nth(1).unwrap().to_string();
-    // println!("path: {}", path);
 
     let mut headers = HashMap::new();
     let mut content_length = 0;
 
-    // Read headers
     loop {
         let mut line = String::new();
         reader.read_line(&mut line).unwrap();
@@ -210,9 +195,6 @@ fn reqreader<R: BufRead + Read>(
         }
     }
 
-    // println!("Headers: {:?}", headers);
-
-    // Read body
     let mut body = Vec::new();
     if content_length > 0 {
         let mut buffer = vec![0; content_length];
