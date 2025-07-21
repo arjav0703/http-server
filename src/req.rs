@@ -7,9 +7,10 @@ use std::path::Path;
 use crate::h_res::HttpResponse;
 use crate::htmlgenerator;
 
-/// Top‐level request dispatcher.  
+/// Top‐level request dispatcher.
 /// Returns true if the connection should close.
 pub fn handle_req(stream: &mut TcpStream, directory: &Option<String>, allow_write: bool) -> bool {
+    // dbg!(directory);
     // parse request
     let mut reader = BufReader::new(stream.try_clone().expect("Failed to clone stream"));
     let request = match parse_request(&mut reader) {
@@ -118,7 +119,13 @@ fn parse_request<R: BufRead + Read>(reader: &mut R) -> Result<Request, HttpRespo
 
 fn route_request(req: &Request, directory: &Option<String>, allow_write: bool) -> HttpResponse {
     match req.path.as_str() {
-        "/" => landing_page(),
+        "/" => {
+            if let Some(dir) = directory {
+                directory_response(dir)
+            } else {
+                landing_page()
+            }
+        }
 
         "/user-agent" => agent_handler(&req.headers),
 
@@ -136,15 +143,15 @@ fn route_request(req: &Request, directory: &Option<String>, allow_write: bool) -
 }
 
 fn landing_page() -> HttpResponse {
+    let dir = std::env::current_dir().unwrap_or_default();
+    directory_response(dir.to_str().unwrap_or("."))
+}
+
+fn directory_response(dir_path: &str) -> HttpResponse {
     let mut res = HttpResponse::new("200 OK");
     res.add_header("Content-Type", "text/html");
 
-    let content = fs::read_to_string("index.html").unwrap_or_else(|_| {
-        eprintln!("Could not read index.html, using fallback");
-        "<html><body><h1>index.html missing</h1></body></html>".into()
-    });
-
-    let html = htmlgenerator::directory_to_html(&"/home/arjav/Music/".to_string());
+    let html = htmlgenerator::directory_to_html(dir_path);
     res.set_body(html.as_bytes());
     res
 }
@@ -206,10 +213,30 @@ fn restrict_path(p: &str) -> Result<(), HttpResponse> {
 }
 
 fn serve_file(path: &Path) -> HttpResponse {
+    if path.is_dir() {
+        return directory_response(path.to_str().unwrap_or("."));
+    }
+
     match fs::read(path) {
         Ok(contents) => {
             let mut res = HttpResponse::new("200 OK");
-            res.add_header("Content-Type", "application/octet-stream");
+
+            // set content type based on file extension
+            let content_type = match path.extension().and_then(|ext| ext.to_str()) {
+                Some("html") | Some("htm") => "text/html",
+                Some("css") => "text/css",
+                Some("js") => "application/javascript",
+                Some("jpg") | Some("jpeg") => "image/jpeg",
+                Some("png") => "image/png",
+                Some("gif") => "image/gif",
+                Some("svg") => "image/svg+xml",
+                Some("json") => "application/json",
+                Some("pdf") => "application/pdf",
+                Some("txt") => "text/plain",
+                _ => "application/octet-stream",
+            };
+
+            res.add_header("Content-Type", content_type);
             res.set_body(&contents);
             res
         }
