@@ -5,6 +5,7 @@ use std::net::TcpStream;
 use std::path::Path;
 
 use crate::h_res::HttpResponse;
+use crate::htmlgenerator;
 
 /// Top‐level request dispatcher.  
 /// Returns true if the connection should close.
@@ -142,7 +143,9 @@ fn landing_page() -> HttpResponse {
         eprintln!("Could not read index.html, using fallback");
         "<html><body><h1>index.html missing</h1></body></html>".into()
     });
-    res.set_body(content.as_bytes());
+
+    let html = htmlgenerator::directory_to_html(&"/home/arjav/Music/".to_string());
+    res.set_body(html.as_bytes());
     res
 }
 

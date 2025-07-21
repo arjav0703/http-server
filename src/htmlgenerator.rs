@@ -1,4 +1,4 @@
-pub fn directory_to_html(directory: &Directory) -> String {
+pub fn directory_to_html(directory_name: &String) -> String {
     let mut html = String::new();
     html.push_str("<!DOCTYPE html>\n");
     html.push_str("<html lang=\"en\">\n");
@@ -9,7 +9,8 @@ pub fn directory_to_html(directory: &Directory) -> String {
     html.push_str("</head>\n");
     html.push_str("<body>\n");
 
-    generate_html_for_directory(&mut html, directory, 0);
+    let directory = scan_directory(directory_name);
+    generate_html_for_directory(&mut html, &directory, 0);
 
     html.push_str("</body>\n");
     html.push_str("</html>\n");
@@ -22,10 +23,9 @@ struct Directory {
 }
 struct DirectoryEntry {
     name: String,
-    subdirectory: Option<Box<Directory>>,
-    file: Option<File>,
+    file: Option<FileEntry>,
 }
-struct File {
+struct FileEntry {
     name: String,
 }
 
@@ -37,15 +37,30 @@ fn generate_html_for_directory(html: &mut String, directory: &Directory, depth: 
         html.push_str(&format!("{}<li>\n", indent));
         html.push_str(&format!("{}<strong>{}</strong>\n", indent, entry.name));
 
-        if let Some(subdir) = &entry.subdirectory {
-            generate_html_for_directory(html, subdir, depth + 1);
-        } else if let Some(file) = &entry.file {
-            html.push_str(&format!("{}<p>File: {}</p>\n", indent, file.name));
-        }
-
         html.push_str(&format!("{}</li>\n", indent));
     }
 
     html.push_str(&format!("{}</ul>\n", indent));
 }
 
+fn scan_directory(path: &str) -> Directory {
+    let mut entries = Vec::new();
+
+    if let Ok(dir_entries) = std::fs::read_dir(path) {
+        for entry in dir_entries.flatten() {
+            let name = entry.file_name().into_string().unwrap_or_default();
+            let full_path = entry.path();
+
+            if full_path.is_dir() {
+                entries.push(DirectoryEntry { name, file: None });
+            } else if full_path.is_file() {
+                entries.push(DirectoryEntry {
+                    name: name.clone(),
+                    file: Some(FileEntry { name }),
+                });
+            }
+        }
+    }
+
+    Directory { entries }
+}

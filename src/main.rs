@@ -4,9 +4,8 @@ use std::thread;
 use std::time::Duration;
 mod argsparser;
 mod h_res;
-mod htmlgenerator;
+pub mod htmlgenerator;
 mod req;
-use htmlgenerator::directory_to_html;
 // todo, threading
 fn main() {
     let (port, directory, allow_write, timeout) = argsparser::getargs();
